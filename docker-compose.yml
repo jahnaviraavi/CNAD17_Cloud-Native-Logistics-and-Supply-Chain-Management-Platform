@@ -1,0 +1,36 @@
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: logiflow-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: logistics_db
+    volumes:
+      - logiflow-data:/var/lib/mysql
+    restart: unless-stopped
+
+  backend:
+    build: .
+    container_name: logiflow-backend
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/logistics_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+  frontend:
+    build: ../cloud-logistics-frontend/frontend
+    container_name: logiflow-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  logiflow-data:
